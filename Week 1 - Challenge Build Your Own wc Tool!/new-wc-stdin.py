@@ -3,10 +3,10 @@ import sys
 import regex as re
 
 
-def count_bytes(file):         # -c (count bytes)    This gets the right amount, not by len 
+def count_bytes(file):              # -c (count bytes)    This gets the right amount, not by len 
     return str(len(file))
 
-def count_bytes_stdin(file):         # -c (count bytes)
+def count_bytes_stdin(file):        # -c (count bytes)
     return len(file)
 
 def count_lines(file):              # -l (count lines)
@@ -39,7 +39,7 @@ def main():
             # If there is no command
             file = sys.argv[1]
 
-        # Check to see if using std-in
+        # Check to see if using std-in and read the file once (loading content into the functions)
         if file and os.path.isfile(file):
             full_path = os.path.join(os.getcwd(), file)
             with open(full_path, 'r', encoding='utf-8') as my_file:
