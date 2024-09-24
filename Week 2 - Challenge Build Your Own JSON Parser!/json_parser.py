@@ -10,7 +10,7 @@ def main():
     print("PATH:    " + file_path)
 
     pass_file = os.path.join(file_path, 'pass2.json')
-    fail_file = os.path.join(file_path, 'fail21.json')   
+    fail_file = os.path.join(file_path, 'fail14.json')   
     
     with open(fail_file, 'r') as file:
     # with open(pass_file, 'r') as file:
@@ -28,9 +28,6 @@ def main():
         #     return "Ivalid Json: Contains Tabs"
         
         # TODO: Check for newlines
-        # if "\n" or ""
-        if ":" not in file:
-            return "Invalid Json: Missing colon"
 
         # TODO: Check to see if it opens with { or [
         if file[0] not in ("{", "["):
@@ -39,17 +36,8 @@ def main():
         # TODO: Check to see if it closes with } or ]
         if file[-1] not in ("}","]"):
             return "Invalid Json: No ending } or ]"
-
-        # if file[0] == "{":
-        #     if file[-1] != "}":
-        #         return "Invalid Json"
-
-        # if file[0] == "[":
-        #     if file[-1] != "]":
-        #         return "Invalid Json"
+        
         file_length = len(file)
-
-
         array_counter = 0
         bracket_counter = 0
 
@@ -57,6 +45,8 @@ def main():
 
             if file[i] == "{":
                 bracket_counter += 1
+                if ":" not in file:
+                    return "Invalid Json: Missing colon"
             if file[i] == "}":
                 bracket_counter -= 1
 
@@ -67,6 +57,15 @@ def main():
 
             # if file[i] == "\\" and file[i +1] != "\\":
             #     return "Line break"
+            # TODO: Illegal escape chars
+            if file[i] == "\\":
+                if file[i+1] not in ("\\"):
+                    return "Invalid Json: Invalid escape chars"
+
+            # TODO: Nums cannot be Hex
+            # From reading the file, every number is a string!
+            if type(file[i]) == int:
+                print("Its an int")
 
         # print("Array Counter: " + str(array_counter))
         # print("Bracket Counter: " + str(bracket_counter))
@@ -75,6 +74,8 @@ def main():
             return "Invalid Json: Not enough closing arrays"
         elif bracket_counter != 0:
             return "Invalid Json: Not enough closing brackets"
+        
+        
     # RULES
     # Json must start be enclosed with [], or {}
     # 
