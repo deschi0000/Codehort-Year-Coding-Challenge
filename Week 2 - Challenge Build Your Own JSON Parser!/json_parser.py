@@ -100,8 +100,7 @@ def main():
             if file[i] == "0":
                 if file[i+1] in ("1","2","3","4","5","6","7","8","9"):
                     return "Invalid Json: Leading Zeros"
-
-                
+          
         # print("Array Counter: " + str(array_counter))
         # print("Bracket Counter: " + str(bracket_counter))
 
@@ -117,27 +116,6 @@ def main():
                 if "+" in i or "-" in i or "*" in i or "/" in i:
                     return "Invalid Json: Illegal Expression"
                 
-
-
-
-
-    # RULES
-    # Json must start be enclosed with [], or {}
-    # 
-
-
-
 if __name__ == '__main__':
     print(main())
-
-
-# pass_json = {
-#     "JSON Test Pattern pass3": {
-#         "The outermost value": "must be an object or array.",
-#         "In this test": "It is an object."
-#     }
-# }
-
-
-# fail_json = {"Illegal expression": 1 + 2}
 
