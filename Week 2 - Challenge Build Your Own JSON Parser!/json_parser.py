@@ -60,9 +60,10 @@ def main():
 
     print("PATH:    " + file_path)
 
-    pass_file = os.path.join(file_path, 'pass1.json')
-    fail_file = os.path.join(file_path, 'fail23.json')   
+    pass_file = os.path.join(file_path, 'pass5.json')
+    fail_file = os.path.join(file_path, 'fail25.json')   
     
+    # Missing comma bug 18, 24, 25, 33
 
 
     with open(fail_file, 'r') as file:
@@ -134,7 +135,7 @@ def main():
             else:
                 # If not a digit, we check the current digit sequence for leading zeros
                 if digit_sequence and digit_sequence[0] == "0" and len(digit_sequence) > 1:
-                    print(f"Found leading zero in number: {''.join(digit_sequence)}")
+                    # print(f"Found leading zero in number: {''.join(digit_sequence)}")
                     # Handle the error as needed (raise exception, continue, etc.)
                     return f"Invalid Json: Found leading zero in number: {''.join(digit_sequence)}"
                 
@@ -179,11 +180,24 @@ def main():
         pattern = r'\[\d*[a-zA-Z](\+|\-)*\d*\]'
         if re.search(pattern, content):         
             return "Invalid Json: Illegal Invocation"
+        
+        pattern_bad_value = r'[\[,]\s*(\w+)\s*[\],]'
+        match = re.search(pattern_bad_value, content)
+        if match:
+            word = match.group(1)  # Capture the matched word
+            print("MATCH: " + word)
+            if word in ("true", "false", "null"):
+                print(f"Valid word '{word}' found in content")
+            else:
+                return "Invalid Json: Illegal Invocation"      
+
 
         temp_string = []
 
         # Check if in brackets
         brackets = False
+        wait_to_skip = False
+        index_to_skip_to = 0
 
         for i in range(file_length):
 
@@ -191,37 +205,48 @@ def main():
             # print("Char: " + char)
             # print("In Brackets: " + str(in_brackets))
 
+            # if not wait_to_skip or i == index_to_skip_to:
+            #     wait_to_skip = False
+
             if bracket_counter > 0 and bracket_counter < 2: # takes into account not nested
                 colon_pattern = r'\"\S*\:'
                 if not re.search(colon_pattern, content):         
                     return "Invalid Json: Missing Colon"
 
                 
-            if array_counter > 0 and array_counter < 2: # takes into account not nested
-                comma_pattern = r'\"\S*\,|\S*\,'
-                if not re.search(comma_pattern, content):         
-                    return "Invalid Json: Missing Comma"
+            # if array_counter > 0 and array_counter < 2: # takes into account not nested
+            #     comma_pattern = r'\"\S*\,|\S*\,' 
+            #     if not re.search(comma_pattern, content):         
+            #         return "Invalid Json: Missing Comma"
                 
 
-                # print(char)
-                if char.isalpha() and content[i - 1] != "\"" and not char.isdigit() and brackets is False:
-                    value_to_test = []
-                    for j in range(i, len(content)):
-                        if content[j] in (",","]"):
-                            array_counter -= 1
-                            break
-                        else:
-                            value_to_test.append(content[j])
+                # # print(char)
+                # if char.isalpha() and content[i - 1] != "\"" and not char.isdigit() and brackets is False:
+                #     value_to_test = []
+                #     for j in range(i, len(content)):
+                #         if content[j] in (",","]","}","."):
+                #             if content[j] == "]":
+                #                 array_counter -= 1
+                #                 break
+                #             elif content[j] == "}":
+                #                 bracket_counter -1
+                #                 break
+                #             else:
+                #                 break
+                #         else:
+                #             value_to_test.append(content[j])
 
-                    word_to_test = "".join(value_to_test)
-                    # print("Testing: ---- " + word_to_test)
+                #     word_to_test = "".join(value_to_test)
+                #     # print("Testing: ---- " + word_to_test)
 
-                    # print("is it in?: " + word_to_test not in ("true","false","null"))
+                #     # print("is it in?: " + word_to_test not in ("true","false","null"))
 
-                    if word_to_test in ("true","false","null"):
-                        break
-                    else:
-                        return "Invalid Json: Bad Value"
+                #     if word_to_test in ("true","rue","ue","e","false","null"):
+                #         # index_to_skip_to = j
+                #         # wait_to_skip = True
+                #         continue
+                #     else:
+                        # return "Invalid Json: Bad Value"
 
             if char == "\"" and not content[i - 1] == "\\":
                 brackets = not brackets 
@@ -274,6 +299,7 @@ def main():
                 # Check for missing colons, commas (19)
                 if char == "\"" and i + 1 < file_length and content[i + 1] not in (":",",","]","}"):
                     return "Invalid Json: Missing colon"
+                
 
 
         # print("arr: " + str(array_counter))
