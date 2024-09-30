@@ -41,7 +41,7 @@ def main():
     # fail 20 - {"Double colon":: null}
     # fail 21 - {"Comma instead of colon", null}                      ****** >>>
     # fail 22 - ["Colon instead of comma": false]                     ****** >>>
-    # fail 23 - ["Bad value", truth]                                  ******
+    # fail 23 - ["Bad value", truth]                                  ****** >>>
     # fail 24 - ['single quote']                                      ****** >>>
     # fail 25 - ["	tab	character	in	string	"]                    ****** >>>
     # fail 26 - ["tab\   character\   in\  string\  "]                ****** >>>
@@ -61,10 +61,12 @@ def main():
     print("PATH:    " + file_path)
 
     pass_file = os.path.join(file_path, 'pass1.json')
-    fail_file = os.path.join(file_path, 'fail22.json')   
+    fail_file = os.path.join(file_path, 'fail23.json')   
     
-    # with open(fail_file, 'r') as file:
-    with open(pass_file, 'r') as file:
+
+
+    with open(fail_file, 'r') as file:
+    # with open(pass_file, 'r') as file:
         uncleaned_content = file.read().strip()
 
         digit_sequence = []  # To collect digits outside quotes
@@ -199,6 +201,27 @@ def main():
                 comma_pattern = r'\"\S*\,|\S*\,'
                 if not re.search(comma_pattern, content):         
                     return "Invalid Json: Missing Comma"
+                
+
+                # print(char)
+                if char.isalpha() and content[i - 1] != "\"" and not char.isdigit() and brackets is False:
+                    value_to_test = []
+                    for j in range(i, len(content)):
+                        if content[j] in (",","]"):
+                            array_counter -= 1
+                            break
+                        else:
+                            value_to_test.append(content[j])
+
+                    word_to_test = "".join(value_to_test)
+                    # print("Testing: ---- " + word_to_test)
+
+                    # print("is it in?: " + word_to_test not in ("true","false","null"))
+
+                    if word_to_test in ("true","false","null"):
+                        break
+                    else:
+                        return "Invalid Json: Bad Value"
 
             if char == "\"" and not content[i - 1] == "\\":
                 brackets = not brackets 
