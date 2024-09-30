@@ -6,10 +6,31 @@
 
  - Step 1 : Parses a simple valid JSON object ({}) and detects invalid JSON. A suitable message is returned to the user.
 
- - Step 2: Parses JSON with string keys and values ```{"key": "value"}```
+ - Step 2: Parses JSON with string keys and values 
+   ```
+   {"key": "value"}
+   ```
 
- - Step 3: Handles boolean, null, and numeric values ```{ "key1": true, "key2": false, "key3": null, "key4": "value", "key5": 101 } ``` 
- - Step 4: Supports nested objects and arrays ```{"key": "value","key-n": 101,"key-o": {},"key-l": []}```
+ - Step 3: Handles boolean, null, and numeric values 
+   ```bash
+   { 
+   "key1": true, 
+   "key2": false, 
+   "key3": null, 
+   "key4": "value", "
+   key5": 101 
+   } 
+   ``` 
+
+ - Step 4: Supports nested objects and arrays 
+   ```bash
+   {
+   "key": "value",
+   "key-n": 101,
+   "key-o": {},
+   "key-l": []
+   }
+   ```
 
 
 
