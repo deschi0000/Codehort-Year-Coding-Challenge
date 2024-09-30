@@ -1,13 +1,15 @@
 import os
 import unittest
+from json_parser_tester.json_parser_tester import test_valid_json
 
 class TestJsonFiles(unittest.TestCase):
 
     def setUp(self):
         # Define the folder containing your JSON files
         cwd = os.getcwd()
-        folder_name = 'test-files'
-        self.folder_path = os.path.join(cwd, folder_name)
+        # folder_name = 'test-files'
+        folder_names = ['unit-test', 'test-files']
+        self.folder_path = os.path.join(cwd, *folder_names)
     
     def test_print_json_files(self):
 
@@ -24,12 +26,22 @@ class TestJsonFiles(unittest.TestCase):
 
         for json_file in json_files:
             file_path = os.path.join(self.folder_path, json_file)
-            with open(file_path, 'r') as f:
-                print("FILE: " + json_file)
-                print("====================================================")
-                print(f.read())
-                print("====================================================")
-                print('\n\n')
+            
+            # print("PATH: " + file_path)
+
+            # send the file path
+            print("\n")
+            print("JSonFile: " + json_file )
+            print(test_valid_json(file_path))
+            print("\n")
+            # with open(file_path, 'r') as f:
+            #     print("FILE: " + json_file)
+            #     print("====================================================")
+            #     print(f.read())
+            #     print("====================================================")
+            #     print('\n\n')
+
+
 
 if __name__ == '__main__':
     unittest.main()
