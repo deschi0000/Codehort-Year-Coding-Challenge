@@ -23,6 +23,7 @@ class TestJsonFiles(unittest.TestCase):
 
         # TODO: Replace the reading of the Json file, with the actual
         # calling of the function here
+        print("\n")
 
         for json_file in json_files:
             file_path = os.path.join(self.folder_path, json_file)
@@ -30,10 +31,17 @@ class TestJsonFiles(unittest.TestCase):
             # print("PATH: " + file_path)
 
             # send the file path
-            print("\n")
+            # print("\n")
+
             print("JSonFile: " + json_file )
             print(test_valid_json(file_path))
             print("\n")
+
+            # if json_file == "fail22.json" or json_file == "pass1.json":
+            #     print(test_valid_json(file_path))
+            #     print("\n")
+
+
             # with open(file_path, 'r') as f:
             #     print("FILE: " + json_file)
             #     print("====================================================")

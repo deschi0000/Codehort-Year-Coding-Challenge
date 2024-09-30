@@ -217,13 +217,18 @@ def test_valid_json(file_path):
 
                 
             if array_counter > 0 and array_counter < 2: # takes into account not nested
+                # comma_pattern = r'\"\S*\,|\S*\,' 
+                # comma_pattern_single = r'\[\"\S*?]'
+                # if not re.search(comma_pattern, content):
+                #     if not re.search(comma_pattern_single, content):         
+                #         return "Invalid Json: Missing Comma"
+                #     else:
+                #         continue
                 comma_pattern = r'\"\S*\,|\S*\,' 
                 comma_pattern_single = r'\[\"\S*?]'
-                if not re.search(comma_pattern, content):
-                    if not re.search(comma_pattern_single, content):         
-                        return "Invalid Json: Missing Comma"
-                    else:
-                        continue
+                if not re.search(comma_pattern, content) and re.search(comma_pattern_single, content):         
+                    return "Invalid Json: Missing Comma"
+                
                 
 
                 # # print(char)
@@ -284,8 +289,14 @@ def test_valid_json(file_path):
                 array_counter += 1
                 if array_counter > 19:                    # Test the depth of an array
                     return "Invalid Json: Too Deep"
+
+            # Make sure that you are not in a bracket as well 
+            if array_counter > 0 and bracket_counter < 1 and not brackets and char == ":" and content[i - 1] == "\"":
+                return "Invalid Json: No Comma"
+           
             if char == "]":
                 array_counter -= 1 
+
             
             # Check for any invalid line breaks
             if (char.isalpha() or char == "\\") and content[i + 1] == "\n":
