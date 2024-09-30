@@ -216,10 +216,14 @@ def test_valid_json(file_path):
                     return "Invalid Json: Missing Colon"
 
                 
-            # if array_counter > 0 and array_counter < 2: # takes into account not nested
-            #     comma_pattern = r'\"\S*\,|\S*\,' 
-            #     if not re.search(comma_pattern, content):         
-            #         return "Invalid Json: Missing Comma"
+            if array_counter > 0 and array_counter < 2: # takes into account not nested
+                comma_pattern = r'\"\S*\,|\S*\,' 
+                comma_pattern_single = r'\[\"\S*?]'
+                if not re.search(comma_pattern, content):
+                    if not re.search(comma_pattern_single, content):         
+                        return "Invalid Json: Missing Comma"
+                    else:
+                        continue
                 
 
                 # # print(char)

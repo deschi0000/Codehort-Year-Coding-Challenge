@@ -60,14 +60,14 @@ def main():
 
     print("PATH:    " + file_path)
 
-    pass_file = os.path.join(file_path, 'pass5.json')
-    fail_file = os.path.join(file_path, 'fail25.json')   
+    pass_file = os.path.join(file_path, 'pass2.json')
+    fail_file = os.path.join(file_path, 'fail22.json')   
     
     # Missing comma bug 18, 24, 25, 33
 
 
-    with open(fail_file, 'r') as file:
-    # with open(pass_file, 'r') as file:
+    # with open(fail_file, 'r') as file:
+    with open(pass_file, 'r') as file:
         uncleaned_content = file.read().strip()
 
         digit_sequence = []  # To collect digits outside quotes
@@ -214,10 +214,11 @@ def main():
                     return "Invalid Json: Missing Colon"
 
                 
-            # if array_counter > 0 and array_counter < 2: # takes into account not nested
-            #     comma_pattern = r'\"\S*\,|\S*\,' 
-            #     if not re.search(comma_pattern, content):         
-            #         return "Invalid Json: Missing Comma"
+            if array_counter > 0 and array_counter < 2: # takes into account not nested
+                comma_pattern = r'\"\S*\,|\S*\,' 
+                comma_pattern_single = r'\[\"\S*?]'
+                if not re.search(comma_pattern, content) and re.search(comma_pattern_single, content):         
+                    return "Invalid Json: Missing Comma"
                 
 
                 # # print(char)
