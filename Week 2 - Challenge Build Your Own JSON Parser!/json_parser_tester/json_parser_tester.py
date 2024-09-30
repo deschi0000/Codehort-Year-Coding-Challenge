@@ -73,7 +73,7 @@ def test_valid_json(file_path):
         uncleaned_content = file.read().strip()
 
         digit_sequence = []  # To collect digits outside quotes
-        in_brackets = False
+        in_quotations = False
         cleaned_list = []
         escaped = False  # To handle escape sequences
 
@@ -81,7 +81,7 @@ def test_valid_json(file_path):
             char = uncleaned_content[i]
             # print("THIS: " + char)
 
-            if escaped and not in_brackets:
+            if escaped and not in_quotations:
                 return "Invalid Json: Illegal Naked"
 
             # Handle escaped backslashes
@@ -114,25 +114,25 @@ def test_valid_json(file_path):
                 continue
 
 
-            if char == " " and not in_brackets:
+            if char == " " and not in_quotations:
                 continue
 
-            if char == "\n" and not in_brackets:
+            if char == "\n" and not in_quotations:
                 continue
 
-            elif char == "\n" and in_brackets:
+            elif char == "\n" and in_quotations:
                 return "Invalid Json: Illegal Line Break"
 
             if char == "\"" and not escaped:
-                in_brackets = not in_brackets  # Toggle the in_brackets state
+                in_quotations = not in_quotations  # Toggle the in_quotations state
 
             # Preserve spaces inside quotes
-            if char == " " and in_brackets:
+            if char == " " and in_quotations:
                 cleaned_list.append(char)  # Keep the space
                 continue
 
             # Handle digit sequences outside of quotes and checking special character numbers
-            if char.isdigit() and not in_brackets and uncleaned_content[i - 1] not in ("+","-","e"):
+            if char.isdigit() and not in_quotations and uncleaned_content[i - 1] not in ("+","-","e"):
                 digit_sequence.append(char)
             else:
                 # If not a digit, we check the current digit sequence for leading zeros
@@ -205,7 +205,7 @@ def test_valid_json(file_path):
 
             char = content[i]
             # print("Char: " + char)
-            # print("In Brackets: " + str(in_brackets))
+            # print("In Brackets: " + str(in_quotations))
 
             # if not wait_to_skip or i == index_to_skip_to:
             #     wait_to_skip = False
@@ -228,36 +228,6 @@ def test_valid_json(file_path):
                 comma_pattern_single = r'\[\"\S*?]'
                 if not re.search(comma_pattern, content) and re.search(comma_pattern_single, content):         
                     return "Invalid Json: Missing Comma"
-                
-                
-
-                # # print(char)
-                # if char.isalpha() and content[i - 1] != "\"" and not char.isdigit() and brackets is False:
-                #     value_to_test = []
-                #     for j in range(i, len(content)):
-                #         if content[j] in (",","]","}","."):
-                #             if content[j] == "]":
-                #                 array_counter -= 1
-                #                 break
-                #             elif content[j] == "}":
-                #                 bracket_counter -1
-                #                 break
-                #             else:
-                #                 break
-                #         else:
-                #             value_to_test.append(content[j])
-
-                #     word_to_test = "".join(value_to_test)
-                #     # print("Testing: ---- " + word_to_test)
-
-                #     # print("is it in?: " + word_to_test not in ("true","false","null"))
-
-                #     if word_to_test in ("true","rue","ue","e","false","null"):
-                #         # index_to_skip_to = j
-                #         # wait_to_skip = True
-                #         continue
-                #     else:
-                        # return "Invalid Json: Bad Value"
 
             if char == "\"" and not content[i - 1] == "\\":
                 brackets = not brackets 
@@ -317,8 +287,6 @@ def test_valid_json(file_path):
                 if char == "\"" and i + 1 < file_length and content[i + 1] not in (":",",","]","}"):
                     return "Invalid Json: Missing colon"
                 
-
-
         # print("arr: " + str(array_counter))
         # print("brack: " + str(bracket_counter))
 
@@ -327,8 +295,6 @@ def test_valid_json(file_path):
         elif bracket_counter != 0:
             return "Invalid Json: Not enough closing brackets / Mismatch"
         
-
-        
         # TODO: Check for Illegal expressions
         check_illegal_expression_arr = [i.strip() for i in content.split(":")]
         for i in check_illegal_expression_arr:
@@ -336,7 +302,6 @@ def test_valid_json(file_path):
                 if "+" in i or "-" in i or "*" in i or "/" in i:
                     return "Invalid Json: Illegal Expression"
                 
-
     return "Valid Json File"
                 
 # if __name__ == '__main__':
