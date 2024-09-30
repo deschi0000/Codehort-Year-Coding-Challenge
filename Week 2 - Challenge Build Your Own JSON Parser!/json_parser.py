@@ -21,7 +21,7 @@ def main():
     # TODO:
     # fail 1  - "A JSON payload should be an object or array, not a string."
     # fail 2  - ["Unclosed array"
-    # fail 3  - {unquoted_key: "keys must be quoted"}                  ****** >>>
+    # fail 3  - {unquoted_key: "keys must be quoted"}                 ****** >>>
     # fail 4  - ["extra comma",]
     # fail 5  - ["double extra comma",,]
     # fail 6  - [   , "<-- missing value"]
@@ -30,21 +30,21 @@ def main():
     # fail 9  - {"Extra comma": true,}
     # fail 10 - {"Extra value after close": true} "misplaced quoted value"
     # fail 11 - {"Illegal expression": 1 + 2}
-    # fail 12 - {"Illegal invocation": alert()}                        ****** >>>
+    # fail 12 - {"Illegal invocation": alert()}                       ****** >>>
     # fail 13 - {"Numbers cannot have leading zeroes": 013}
-    # fail 14 - {"Numbers cannot be hex": 0x14}                       ****** 
+    # fail 14 - {"Numbers cannot be hex": 0x14}                       ****** >>>
     # fail 15 - ["Illegal backslash escape: \x15"]                    ****** >>> 
-    # fail 16 - [\naked]                                              ****** 
+    # fail 16 - [\naked]                                              ****** >>>
     # fail 17 - ["Illegal backslash escape: \017"]
     # fail 18 - [[[[[[[[[[[[[[[[[[[["Too deep"]]]]]]]]]]]]]]]]]]]]
     # fail 19 - {"Missing colon" null}                                ****** >>>
     # fail 20 - {"Double colon":: null}
-    # fail 21 - {"Comma instead of colon", null}                      ******
-    # fail 22 - ["Colon instead of comma": false]                     ******
+    # fail 21 - {"Comma instead of colon", null}                      ****** >>>
+    # fail 22 - ["Colon instead of comma": false]                     ****** >>>
     # fail 23 - ["Bad value", truth]                                  ******
-    # fail 24 - ['single quote']                                      ******
+    # fail 24 - ['single quote']                                      ****** >>>
     # fail 25 - ["	tab	character	in	string	"]                    ****** >>>
-    # fail 26 - ["tab\   character\   in\  string\  "]                ****** 
+    # fail 26 - ["tab\   character\   in\  string\  "]                ****** >>>
     # fail 27 - Line/ break                                           ****** >>>
     # fail 28 - Line break                                            ****** >>>
     # fail 29 - [0e]                                                  ****** >>>
@@ -61,10 +61,10 @@ def main():
     print("PATH:    " + file_path)
 
     pass_file = os.path.join(file_path, 'pass1.json')
-    fail_file = os.path.join(file_path, 'fail12.json')   
+    fail_file = os.path.join(file_path, 'fail22.json')   
     
-    with open(fail_file, 'r') as file:
-    # with open(pass_file, 'r') as file:
+    # with open(fail_file, 'r') as file:
+    with open(pass_file, 'r') as file:
         uncleaned_content = file.read().strip()
 
         digit_sequence = []  # To collect digits outside quotes
@@ -177,12 +177,7 @@ def main():
         pattern = r'\[\d*[a-zA-Z](\+|\-)*\d*\]'
         if re.search(pattern, content):         
             return "Invalid Json: Illegal Invocation"
-        
-        # Check for hex nums
-        # pattern = r'(?<!")\d+[A-Za-z](?!")'
-        # if re.search(pattern, content):         
-        #     return "Invalid Json: Hex Numbers / imaginary numbers not allowed"
-    
+
         temp_string = []
 
         # Check if in brackets
@@ -195,9 +190,15 @@ def main():
             # print("In Brackets: " + str(in_brackets))
 
             if bracket_counter > 0 and bracket_counter < 2: # takes into account not nested
-                pattern = r'\"\S*\:'
-                if not re.search(pattern, content):         
+                colon_pattern = r'\"\S*\:'
+                if not re.search(colon_pattern, content):         
                     return "Invalid Json: Missing Colon"
+
+                
+            if array_counter > 0 and array_counter < 2: # takes into account not nested
+                comma_pattern = r'\"\S*\,|\S*\,'
+                if not re.search(comma_pattern, content):         
+                    return "Invalid Json: Missing Comma"
 
             if char == "\"" and not content[i - 1] == "\\":
                 brackets = not brackets 
@@ -206,9 +207,12 @@ def main():
                 
                 if brackets is True or i == len(content) - 1:
                     string_to_check = "".join(temp_string)
-                    pattern = r'0x[0-9a-fA-F]+|[0-9a-fA-F]+^'
-                    if re.search(pattern, string_to_check): 
-                        return "Ivalid Json: Hex Oustide of a string"      
+                    hex_pattern = r'0x[0-9a-fA-F]+|[0-9a-fA-F]+^'
+                    single_quote_pattern = r'[a-zA-Z]*\''
+                    if re.search(hex_pattern, string_to_check): 
+                        return "Ivalid Json: Hex Oustide of a string"
+                    elif re.search(single_quote_pattern, string_to_check): 
+                        return "Ivalid Json: Single Quotes"       
                     else:
                         temp_string = []
                 else:
