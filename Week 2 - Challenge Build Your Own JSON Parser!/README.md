@@ -43,10 +43,7 @@ Python
 
 ## Usage
 
-To run tests, Download this test suite:
-http://www.json.org/JSON_checker/test.zip 
-
 ```bash
-  
+  python -m unit-test.test_json_files
 ```
 

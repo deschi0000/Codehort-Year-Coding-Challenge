@@ -1,24 +1,7 @@
 import os
 import re
 
-# class JSONParseError(Exception):
-#     """Base class for exceptions in JSON parsing."""
-#     pass
-
-# class MissingBracketError(JSONParseError):
-#     """Raised when there are unmatched brackets."""
-#     def __init__(self):
-#         super().__init__("Invalid JSON: Not enough closing brackets / Mismatch")
-
-# class InvalidSyntaxError(JSONParseError):
-#     """Raised for syntax errors in the JSON."""
-#     def __init__(self, message):
-#         super().__init__(f"Invalid JSON: {message}")
-
-
-
-
-# TODO:
+# REFERENCE
 # fail 1  - "A JSON payload should be an object or array, not a string."
 # fail 2  - ["Unclosed array"
 # fail 3  - {unquoted_key: "keys must be quoted"}                 ****** >>>
@@ -52,25 +35,19 @@ import re
 # fail 31 - [0e+-1]
 # fail 32 - {"Comma instead if closing brace": true,
 # fail 33 - ["mismatch"}
+# Pass 1-5 All Valid
 
 def test_valid_json(file_path):
 
-    # folder_names = ['unit-test', 'test-files']
-
-    # cwd = os.getcwd()
-    # file_path = os.path.join(cwd, *folder_names)
-
-    # print("PATH:    " + file_path)
-
-    # pass_file = os.path.join(file_path, 'pass5.json')
-    # fail_file = os.path.join(file_path, 'fail25.json')   
-    
-    # Missing comma bug 18, 24, 25, 33
-    # print(file_path)
+    # test_pass_file = os.path.join(file_path, 'pass5.json')
+    # test_fail_file = os.path.join(file_path, 'fail25.json')   
 
     with open(file_path, 'r') as file:
-    # with open(pass_file, 'r') as file:
         uncleaned_content = file.read().strip()
+
+        print("==============================================")
+        print(uncleaned_content)
+        print("==============================================")
 
         digit_sequence = []  # To collect digits outside quotes
         in_quotations = False
@@ -79,7 +56,6 @@ def test_valid_json(file_path):
 
         for i in range(len(uncleaned_content)):
             char = uncleaned_content[i]
-            # print("THIS: " + char)
 
             if escaped and not in_quotations:
                 return "Invalid Json: Illegal Naked"
@@ -89,12 +65,6 @@ def test_valid_json(file_path):
                 cleaned_list.append(char)
                 escaped = False
                 continue
-
-            # if char == "\\":
-                # This means the next character is escaped, so we skip handling it specially
-                # escaped = True
-                # cleaned_list.append(char)
-                # continue
 
             # Check if it's a backslash
             if char == "\\":
@@ -152,9 +122,9 @@ def test_valid_json(file_path):
 
         content = "".join(cleaned_list)
 
-        print("==============================================")
-        print(content)
-        print("==============================================")
+        # print("==============================================")
+        # print(content)
+        # print("==============================================")
 
         # TODO: Check to see if it opens with { or [
         if content[0] not in ("{", "["):
@@ -187,7 +157,7 @@ def test_valid_json(file_path):
         match = re.search(pattern_bad_value, content)
         if match:
             word = match.group(1)  # Capture the matched word
-            print("MATCH: " + word)
+            # print("MATCH: " + word)
             if word in ("true", "false", "null"):
                 print(f"Valid word '{word}' found in content")
             else:
@@ -196,19 +166,11 @@ def test_valid_json(file_path):
 
         temp_string = []
 
-        # Check if in brackets
         brackets = False
-        wait_to_skip = False
-        index_to_skip_to = 0
 
         for i in range(file_length):
 
             char = content[i]
-            # print("Char: " + char)
-            # print("In Brackets: " + str(in_quotations))
-
-            # if not wait_to_skip or i == index_to_skip_to:
-            #     wait_to_skip = False
 
             if bracket_counter > 0 and bracket_counter < 2: # takes into account not nested
                 colon_pattern = r'\"\S*\:'
@@ -217,13 +179,6 @@ def test_valid_json(file_path):
 
                 
             if array_counter > 0 and array_counter < 2: # takes into account not nested
-                # comma_pattern = r'\"\S*\,|\S*\,' 
-                # comma_pattern_single = r'\[\"\S*?]'
-                # if not re.search(comma_pattern, content):
-                #     if not re.search(comma_pattern_single, content):         
-                #         return "Invalid Json: Missing Comma"
-                #     else:
-                #         continue
                 comma_pattern = r'\"\S*\,|\S*\,' 
                 comma_pattern_single = r'\[\"\S*?]'
                 if not re.search(comma_pattern, content) and re.search(comma_pattern_single, content):         
@@ -249,8 +204,6 @@ def test_valid_json(file_path):
             
             if char == "{":
                 bracket_counter += 1
-                # if ":" not in content:
-                #     return "Invalid Json: Missing colon"
 
             if char == "}":
                 bracket_counter -= 1
@@ -260,13 +213,12 @@ def test_valid_json(file_path):
                 if array_counter > 19:                    # Test the depth of an array
                     return "Invalid Json: Too Deep"
 
-            # Make sure that you are not in a bracket as well 
+            # Make sure not in a bracket as well 
             if array_counter > 0 and bracket_counter < 1 and not brackets and char == ":" and content[i - 1] == "\"":
                 return "Invalid Json: No Comma"
            
             if char == "]":
                 array_counter -= 1 
-
             
             # Check for any invalid line breaks
             if (char.isalpha() or char == "\\") and content[i + 1] == "\n":
@@ -304,10 +256,6 @@ def test_valid_json(file_path):
                 
     return "Valid Json File"
                 
-# if __name__ == '__main__':
-#     print(main())
-#     # main()
-
 
 
 
