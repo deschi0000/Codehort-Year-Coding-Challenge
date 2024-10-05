@@ -128,6 +128,7 @@ def traverse_hufftree_binary(node, code=0, length=0, code_dict=None):
     if node.is_leaf():
         # If it's a leaf node, store the character's binary code and its bit length
         binary_code = bin(code)[2:]
+        # code_dict[node.value()] = (int(binary_code), length)  # Store tuple (binary code, bit length)
         code_dict[node.value()] = (binary_code, length)  # Store tuple (binary code, bit length)
     else:
         # Traverse left (append 0 to the binary code)
@@ -150,6 +151,30 @@ def traverse_hufftree_binary(node, code=0, length=0, code_dict=None):
 #         traverse_hufftree(node.left(), path + "0")   # Traverse left and append "0"
 #         traverse_hufftree(node.right(), path + "1")  # Traverse right and append "1"
 
+def compress_into_binary(text, code_dict):
+    """Compress text into a long binary string using the Huffman codes from code_dict."""
+    binary_string = ""
+    
+    # Iterate over each character in the text and replace it with its binary code
+    for char in text:
+        if char in code_dict:
+            code, length = code_dict[char]  # Get the binary code and its length
+            # Convert the integer code to a binary string, padded with leading zeros if necessary
+            
+            padded_binary = str(code)
+            if len(padded_binary) < 8:
+                padded_binary = code.zfill(8)  # Fill leading zeros to make it 8 bits
+            
+            print(f"code: {code}")
+            # print(f"adding: {int(code):0{length}b}\n")
+            print(f"padded: {padded_binary}\n")
+            
+            binary_string += padded_binary  
+    
+    return binary_string
+
+
+
 def main():
 
     # Get the current working directory and the list of items there
@@ -160,12 +185,13 @@ def main():
     txt_files = [f for f in list_dir if f.endswith(".txt")]
 
     # Get the path and the actual folder that we will be decompressing.
-    file_with_path = os.path.join(cwd, txt_files[0])
+    # file_with_path = os.path.join(cwd, txt_files[0])
+    file_with_path = os.path.join(cwd, "test.txt")
 
     # Open the file and read the frequency of characters into a dictionary
     alpha_dict = {}
     
-    with open(file_with_path, 'r', encoding="utf8") as file:
+    with open(file_with_path, "r", encoding="utf8") as file:
         
         read_file = file.read()
 
@@ -179,7 +205,7 @@ def main():
         sorted_dict_lst = sorted(alpha_dict.items(), key= lambda item : item[1])
 
 
-        # print(sorted_dict_lst)
+        print(sorted_dict_lst)
         # print("Char Frequency of File:")
         # # for i in sorted_dict_lst:
         # #     print(i)
@@ -212,9 +238,19 @@ def main():
         # print(binary_dict)
         for i in binary_dict.items():
             print(i)
+            # print(type(i[1][0]))
         print("===================================")
 
-        
+        # for i in read_file:
+        #     print(f"{i} : {binary_dict[i]}")
+            # binary_dict += binary_dict[i][0]
+       
+       
+        # Lets convert it into binary!
+        # print(binary_arr)
+        binary_string = compress_into_binary(read_file, binary_dict)
+        print(binary_string)
+        print(bin(int(binary_string)))
 
 
 
@@ -224,5 +260,8 @@ def main():
 
 
 
-if __name__ == '__main__':
+
+
+
+if __name__ == "__main__":
     main()
