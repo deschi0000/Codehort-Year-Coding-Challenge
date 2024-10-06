@@ -1,6 +1,8 @@
+import json
 import os
 import heapq
 from abc import ABC, abstractmethod
+import zipfile
 
 
 
@@ -151,28 +153,46 @@ def traverse_hufftree_binary(node, code=0, length=0, code_dict=None):
 #         traverse_hufftree(node.left(), path + "0")   # Traverse left and append "0"
 #         traverse_hufftree(node.right(), path + "1")  # Traverse right and append "1"
 
-def compress_into_binary(text, code_dict):
-    """Compress text into a long binary string using the Huffman codes from code_dict."""
+def compress_into_binary(text, code_dict, title):
+    """Compress text into a binary string using Huffman codes from code_dict and save it as a ZIP file."""
     binary_string = ""
     
     # Iterate over each character in the text and replace it with its binary code
     for char in text:
         if char in code_dict:
             code, length = code_dict[char]  # Get the binary code and its length
-            # Convert the integer code to a binary string, padded with leading zeros if necessary
-            
-            padded_binary = str(code)
-            if len(padded_binary) < 8:
-                padded_binary = code.zfill(8)  # Fill leading zeros to make it 8 bits
-            
-            print(f"code: {code}")
-            # print(f"adding: {int(code):0{length}b}\n")
-            print(f"padded: {padded_binary}\n")
-            
+            padded_binary = format(int(code, 2), f'0{length}b')
             binary_string += padded_binary  
-    
-    return binary_string
 
+    # Ensure the binary string is a multiple of 8 bits by padding with zeros if necessary
+    padding_length = (8 - len(binary_string) % 8) % 8
+    binary_string += '0' * padding_length  
+
+    # Convert the binary string to an integer
+    binary_int = int(binary_string, 2)
+
+    # Convert the integer to a byte array using to_bytes()
+    byte_length = (len(binary_string) + 7) // 8  
+    byte_array = binary_int.to_bytes(byte_length, byteorder='big')
+
+    # Create a ZIP file to save the compressed data
+    # output_file_path = os.path.join(os.getcwd(), "compressed_output.zip")
+    output_file_path = os.path.join(os.getcwd(), f"{title}.zip")
+    
+    with zipfile.ZipFile(output_file_path, 'w') as zip_file:
+        # Save the compressed data as a binary file inside the ZIP
+        zip_file.writestr("compressed_data.bin", byte_array)
+        
+        # Optionally, you can save the padding length for decompression purposes
+        zip_file.writestr("padding_length.txt", str(padding_length).encode())
+    
+        # Save the Huffman dictionary as a JSON file
+        zip_file.writestr("huffman_dict.json", json.dumps(code_dict).encode())
+
+    print(f"Compressed binary saved to {output_file_path}")
+    print(binary_string)
+
+    return binary_string
 
 
 def main():
@@ -185,8 +205,14 @@ def main():
     txt_files = [f for f in list_dir if f.endswith(".txt")]
 
     # Get the path and the actual folder that we will be decompressing.
+    
+    # title = txt_files[0].replace(".txt", "")
+    # title = "test.txt"
+    title = "les_mis_med.txt"
     # file_with_path = os.path.join(cwd, txt_files[0])
-    file_with_path = os.path.join(cwd, "test.txt")
+
+    file_with_path = os.path.join(cwd, title)
+
 
     # Open the file and read the frequency of characters into a dictionary
     alpha_dict = {}
@@ -204,13 +230,11 @@ def main():
         # Sort the dictionary by the values then arrange by descending 
         sorted_dict_lst = sorted(alpha_dict.items(), key= lambda item : item[1])
 
-
         print(sorted_dict_lst)
         # print("Char Frequency of File:")
         # # for i in sorted_dict_lst:
         # #     print(i)
         
-
         # First turn each into a huffman node of element and weight
         huffman_heap = [HuffTree(char,freq) for char, freq in sorted_dict_lst]
         # print(len(huffman_heap))
@@ -245,22 +269,12 @@ def main():
         #     print(f"{i} : {binary_dict[i]}")
             # binary_dict += binary_dict[i][0]
        
-       
-        # Lets convert it into binary!
+        # Lets compress it!
+        compress_into_binary(read_file, binary_dict, title)
+
+
         # print(binary_arr)
-        binary_string = compress_into_binary(read_file, binary_dict)
-        print(binary_string)
-        print(bin(int(binary_string)))
-
-
-
-
-
-
-
-
-
-
+        # binary_string = compress_into_binary(read_file, binary_dict)
 
 
 if __name__ == "__main__":
