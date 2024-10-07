@@ -7,10 +7,10 @@ def main():
     
     # Pass the zip file in as an argument
     parser = argparse.ArgumentParser(prog="huffman_decode")
-    parser.add_argument("-z", help="Enter the name of the Zip file")
+    parser.add_argument("-u", help="Enter the name of the Zip file")
     args=parser.parse_args()
 
-    zip_folder = args.z
+    zip_folder = args.u
 
     if zip_folder:
         print(f"argument passed in: {zip_folder}")
