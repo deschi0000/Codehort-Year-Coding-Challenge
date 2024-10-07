@@ -1,3 +1,4 @@
+import argparse
 import json
 import os
 import heapq
@@ -196,30 +197,29 @@ def compress_into_binary(text, code_dict, title):
 
     return binary_string
 
+# Argument parse function
+# Text files to be parsed will be passed as arguments
+def get_argument():
+    parser = argparse.ArgumentParser(prog="huffman_decode")
+    parser.add_argument("-z", help="Enter the name of the Zip file")
+    args=parser.parse_args()
+
+    return args.z
+
 
 def main():
 
-    # Get the current working directory and the list of items there
-    cwd = os.getcwd()
-    list_dir = os.listdir(cwd)
+    # Get the file that will be zipped
+    file_to_zip = get_argument()
+    print(file_to_zip)
 
-    # Retrieve only txt files.
-    txt_files = [f for f in list_dir if f.endswith(".txt")]
-
-    # Get the path and the actual folder that we will be decompressing.
-    
-    # title = txt_files[0].replace(".txt", "")
-    title = "test"
-    # title = "les_mis_med"
-    # file_with_path = os.path.join(cwd, txt_files[0])
-
-    file_with_path = os.path.join(cwd, f"{title}.txt")
-
+    # Get the path and the actual folder that we will be compressing.
+    title = file_to_zip.replace(".txt", "")
 
     # Open the file and read the frequency of characters into a dictionary
     alpha_dict = {}
     
-    with open(file_with_path, "r", encoding="utf8") as file:
+    with open(file_to_zip, "r", encoding="utf8") as file:
         
         read_file = file.read()
 
