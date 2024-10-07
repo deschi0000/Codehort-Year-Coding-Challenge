@@ -4,6 +4,7 @@ import os
 import heapq
 from abc import ABC, abstractmethod
 import zipfile
+import io
 
 
 
@@ -129,11 +130,7 @@ def traverse_hufftree_binary(node, code=0, length=0, code_dict=None):
         code_dict = {}  # Create a dictionary to hold the binary codes
     
     if node.is_leaf():
-        # If it's a leaf node, store the character's binary code and its bit length
-        # binary_code = bin(code)[2:]
         binary_code = f'{code:0{length}b}'  # Use the actual length as formatting
-        print(bin(code))
-        # code_dict[node.value()] = (int(binary_code), length)  # Store tuple (binary code, bit length)
         code_dict[node.value()] = (binary_code, length)  # Store tuple (binary code, bit length)
     else:
         # Traverse left (append 0 to the binary code)
@@ -144,17 +141,6 @@ def traverse_hufftree_binary(node, code=0, length=0, code_dict=None):
     
     return code_dict
 
-
-# # For traversing the tree and printing as a string:
-# def traverse_hufftree(node, path=""):
-#     """Traverse the Huffman tree and print the character along with its code."""
-#     if node.is_leaf():
-#         # If it's a leaf node, print the character and its Huffman code
-#         print(f"Character: {node.value()} | Huffman Code: {path}")
-#     else:
-#         # If it's an internal node, traverse left and right with updated path
-#         traverse_hufftree(node.left(), path + "0")   # Traverse left and append "0"
-#         traverse_hufftree(node.right(), path + "1")  # Traverse right and append "1"
 
 def compress_into_binary(text, code_dict, title):
     """Compress text into a binary string using Huffman codes from code_dict and save it as a ZIP file."""
@@ -178,37 +164,37 @@ def compress_into_binary(text, code_dict, title):
     byte_length = (len(binary_string) + 7) // 8  
     byte_array = binary_int.to_bytes(byte_length, byteorder='big')
 
-    # Create a ZIP file to save the compressed data
-    # output_file_path = os.path.join(os.getcwd(), "compressed_output.zip")
+    # Use buffered writing to save the compressed data
     output_file_path = os.path.join(os.getcwd(), f"{title}.zip")
     
     with zipfile.ZipFile(output_file_path, 'w') as zip_file:
-        # Save the compressed data as a binary file inside the ZIP
-        zip_file.writestr("compressed_data.bin", byte_array)
-        
-        # Optionally, you can save the padding length for decompression purposes
+        # Use BufferedWriter to write binary data in chunks
+        with io.BytesIO() as binary_stream:
+            binary_stream.write(byte_array)
+            binary_stream.seek(0)
+            zip_file.writestr("compressed_data.bin", binary_stream.read())
+
+        # Save the padding length for decompression purposes
         zip_file.writestr("padding_length.txt", str(padding_length).encode())
-    
+
         # Save the Huffman dictionary as a JSON file
         zip_file.writestr("huffman_dict.json", json.dumps(code_dict).encode())
 
     print(f"Compressed binary saved to {output_file_path}")
-    print(binary_string)
 
     return binary_string
 
-# Argument parse function
-# Text files to be parsed will be passed as arguments
+# Argument parsing function remains unchanged...
+
 def get_argument():
     parser = argparse.ArgumentParser(prog="huffman_decode")
     parser.add_argument("-z", help="Enter the name of the Zip file")
-    args=parser.parse_args()
+    args = parser.parse_args()
 
     return args.z
 
 
 def main():
-
     # Get the file that will be zipped
     file_to_zip = get_argument()
     print(file_to_zip)
@@ -216,67 +202,57 @@ def main():
     # Get the path and the actual folder that we will be compressing.
     title = file_to_zip.replace(".txt", "")
 
-    # Open the file and read the frequency of characters into a dictionary
+    # Open the file and read the frequency of characters into a dictionary using buffered I/O
     alpha_dict = {}
-    
-    with open(file_to_zip, "r", encoding="utf8") as file:
-        
-        read_file = file.read()
 
-        for i in read_file:
-            if i not in alpha_dict:
-                alpha_dict[i] = 1
-            else:
-                alpha_dict[i] += 1
+    # Accumulate the entire file content
+    full_text = ""
+
+    # Open the file in binary mode
+    with open(file_to_zip, "rb") as file:
+        
+        # Use BufferedReader to read 64 KB chunks
+        buffered_reader = io.BufferedReader(file)
+        chunk_size = 64 * 1024
+
+        while True:
+            chunk = buffered_reader.read(chunk_size)  
+            if not chunk:
+                break
+            
+            # Decode the binary chunk to a UTF-8 string
+            text_chunk = chunk.decode("utf-8")
+            full_text += text_chunk  # Accumulate file content in full_text
+           
+            for i in text_chunk:
+                if i not in alpha_dict:
+                    alpha_dict[i] = 1
+                else:
+                    alpha_dict[i] += 1
 
         # Sort the dictionary by the values then arrange by descending 
-        sorted_dict_lst = sorted(alpha_dict.items(), key= lambda item : item[1])
+        sorted_dict_lst = sorted(alpha_dict.items(), key=lambda item: item[1])
 
         print(sorted_dict_lst)
-        # print("Char Frequency of File:")
-        # # for i in sorted_dict_lst:
-        # #     print(i)
         
-        # First turn each into a huffman node of element and weight
-        huffman_heap = [HuffTree(char,freq) for char, freq in sorted_dict_lst]
-        # print(len(huffman_heap))
-        # for i in huffman_heap:
-        #     print(i)
+        # First turn each into a Huffman node of element and weight
+        huffman_heap = [HuffTree(char, freq) for char, freq in sorted_dict_lst]
         heapq.heapify(huffman_heap)
 
         huffman_tree = HuffTree.build_tree(huffman_heap)
-        # build_tree(huffman_heap)
-        # build_tree(sorted_dict_lst)
 
-        # print(f"Root weight of the final Huffman tree: {huffman_tree.weight()}")
-
-    
-        # Assuming `hufftree` is your HuffTree object
         root = huffman_tree.root()
         
-        # We can double check and print out what the codes are going to be
-        # traverse_hufftree(root)
-
         # Storing the binary into a dictionary/reference
         binary_dict = traverse_hufftree_binary(root)
 
         print("===================================")
-        # print(binary_dict)
         for i in binary_dict.items():
             print(i)
-            # print(type(i[1][0]))
         print("===================================")
 
-        # for i in read_file:
-        #     print(f"{i} : {binary_dict[i]}")
-            # binary_dict += binary_dict[i][0]
-       
-        # Lets compress it!
-        compress_into_binary(read_file, binary_dict, title)
-
-
-        # print(binary_arr)
-        # binary_string = compress_into_binary(read_file, binary_dict)
+        # Compress the entire accumulated file content
+        compress_into_binary(full_text, binary_dict, title)
 
 
 if __name__ == "__main__":

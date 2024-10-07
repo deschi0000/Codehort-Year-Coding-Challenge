@@ -1,9 +1,12 @@
 import argparse
+import io
 import json
 import zipfile
 import os
 
+
 def unzip_files(zip_folder, unzip_folder_dir):
+    
     if zip_folder:
         print(f"argument passed in: {zip_folder}")
 
@@ -15,7 +18,7 @@ def unzip_files(zip_folder, unzip_folder_dir):
             print(file_list)
             # with zip_file.open("compressed_data.bin") as 
 
-            byte_array = None
+            byte_array = b""            # init as byte
             padding_length = None
             huffman_dict = None
 
@@ -23,7 +26,16 @@ def unzip_files(zip_folder, unzip_folder_dir):
             for filename in file_list:
                 if filename.endswith(".bin"):
                     with zip_file.open(filename) as compressed_file:
-                        byte_array = compressed_file.read()
+                        # Use BufferedReader to read in chunks
+                        buffered_reader = io.BufferedReader(compressed_file)
+                        while True:
+                            # Read 64 KB chunks
+                            chunk_size = 64 * 1024
+                            chunk = buffered_reader.read(chunk_size)
+                            if not chunk:
+                                break
+                            byte_array += chunk
+
                         print(f"Read {len(byte_array)} bytes from {filename}.")
 
                 elif filename.endswith(".txt"):
@@ -72,6 +84,7 @@ def unzip_files(zip_folder, unzip_folder_dir):
 
                 with open(full_path, 'w') as file:
                     file.write(decoded_text)
+
 
 
 
