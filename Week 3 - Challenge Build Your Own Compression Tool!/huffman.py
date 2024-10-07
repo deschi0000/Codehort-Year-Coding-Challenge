@@ -129,7 +129,9 @@ def traverse_hufftree_binary(node, code=0, length=0, code_dict=None):
     
     if node.is_leaf():
         # If it's a leaf node, store the character's binary code and its bit length
-        binary_code = bin(code)[2:]
+        # binary_code = bin(code)[2:]
+        binary_code = f'{code:0{length}b}'  # Use the actual length as formatting
+        print(bin(code))
         # code_dict[node.value()] = (int(binary_code), length)  # Store tuple (binary code, bit length)
         code_dict[node.value()] = (binary_code, length)  # Store tuple (binary code, bit length)
     else:
@@ -207,11 +209,11 @@ def main():
     # Get the path and the actual folder that we will be decompressing.
     
     # title = txt_files[0].replace(".txt", "")
-    # title = "test.txt"
-    title = "les_mis_med.txt"
+    title = "test"
+    # title = "les_mis_med"
     # file_with_path = os.path.join(cwd, txt_files[0])
 
-    file_with_path = os.path.join(cwd, title)
+    file_with_path = os.path.join(cwd, f"{title}.txt")
 
 
     # Open the file and read the frequency of characters into a dictionary
