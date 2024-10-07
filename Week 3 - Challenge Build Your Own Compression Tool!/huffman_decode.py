@@ -1,19 +1,13 @@
 import argparse
 import json
 import zipfile
+import os
 
-
-def main():
-    
-    # Pass the zip file in as an argument
-    parser = argparse.ArgumentParser(prog="huffman_decode")
-    parser.add_argument("-u", help="Enter the name of the Zip file")
-    args=parser.parse_args()
-
-    zip_folder = args.u
-
+def unzip_files(zip_folder, unzip_folder_dir):
     if zip_folder:
         print(f"argument passed in: {zip_folder}")
+
+        title = zip_folder.replace(".zip", "")
 
         with zipfile.ZipFile(zip_folder, "r") as zip_file:
 
@@ -45,17 +39,16 @@ def main():
                         for char, code in huffman_dict.items():
                             print(f"{char}: {code}")
 
-
             if byte_array is not None and huffman_dict is not None:
                 print(byte_array)
 
                 # Convert the byte array to a bit string
                 bit_string = "".join(f"{byte:08b}" for byte in byte_array)
-                print(bit_string)
+                # print(bit_string)
 
                 # Remove the padding
                 bit_string = bit_string[:-padding_length] if padding_length > 0 else bit_string
-                print(bit_string)
+                # print(bit_string)
 
                 # Decode using huffman dict
                 reverse_huffman_dict = {v[0]: k for k, v in huffman_dict.items()}
@@ -69,16 +62,50 @@ def main():
                 for bit in bit_string:
                     temp_bits += bit
                     if temp_bits in reverse_huffman_dict:
-                        print("temp_bits : " + temp_bits)
+                        # print("temp_bits : " + temp_bits)
                         decoded_text += reverse_huffman_dict[temp_bits]
                         temp_bits = ""
 
-                        
                 print("decoded text: " + decoded_text)
+
+                full_path = os.path.join(unzip_folder_dir, f"{title}.txt")
+
+                with open(full_path, 'w') as file:
+                    file.write(decoded_text)
+
 
 
             else:
-                print("Missing files required for deconding.")
+                print("Missing files required for deconding.")   
+
+
+def main():
+
+    # Prep No.1
+    # Check to see if there is a folder where the unzipped files will go,
+    # And if not, create it
+    cwd = os.getcwd()
+    unzip_folder_dir = 'Unzip Directory'
+    unzipped_main_folder_exists = os.path.isdir(os.path.join(cwd, unzip_folder_dir))
+
+    if not unzipped_main_folder_exists:
+        print("Creating folder for unzipped files")
+        os.mkdir(unzip_folder_dir)
+
+
+    # Prep No.2
+    # Pass the zip file in as an argument
+    parser = argparse.ArgumentParser(prog="huffman_decode")
+    parser.add_argument("-u", help="Enter the name of the Zip file")
+    args=parser.parse_args()
+    zip_folder = args.u
+
+    # Unzip the files
+    unzip_files(zip_folder, unzip_folder_dir)
+
+
+
+
 
 
 
