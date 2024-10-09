@@ -7,7 +7,6 @@ import zipfile
 import io
 
 
-
 # The classes for making the huffman tree are transcribed from Java from the following source:
 # https://opendsa-server.cs.vt.edu/ODSA/Books/CS3/html/Huffman.html
 class HuffBaseNode(ABC):
@@ -130,8 +129,11 @@ def traverse_hufftree_binary(node, code=0, length=0, code_dict=None):
         code_dict = {}  # Create a dictionary to hold the binary codes
     
     if node.is_leaf():
-        binary_code = f'{code:0{length}b}'  # Use the actual length as formatting
-        code_dict[node.value()] = (binary_code, length)  # Store tuple (binary code, bit length)
+        # Use the actual length as formatting
+        binary_code = f"{code:0{length}b}"  
+
+        # Store tuple (binary code, bit length)
+        code_dict[node.value()] = (binary_code, length)  
     else:
         # Traverse left (append 0 to the binary code)
         traverse_hufftree_binary(node.left(), code << 1, length + 1, code_dict)
@@ -143,7 +145,8 @@ def traverse_hufftree_binary(node, code=0, length=0, code_dict=None):
 
 
 def compress_into_binary(text, code_dict, title):
-    """Compress text into a binary string using Huffman codes from code_dict and save it as a ZIP file."""
+    """Compress text into a binary string using Huffman codes 
+    from code_dict and save it as a ZIP file."""
     binary_string = ""
     
     # Iterate over each character in the text and replace it with its binary code
@@ -155,36 +158,55 @@ def compress_into_binary(text, code_dict, title):
 
     # Ensure the binary string is a multiple of 8 bits by padding with zeros if necessary
     padding_length = (8 - len(binary_string) % 8) % 8
-    binary_string += '0' * padding_length  
+    binary_string += "0" * padding_length  
+
+    print(f"Padding length: {padding_length}")
+
 
     # Convert the binary string to an integer
     binary_int = int(binary_string, 2)
 
     # Convert the integer to a byte array using to_bytes()
     byte_length = (len(binary_string) + 7) // 8  
-    byte_array = binary_int.to_bytes(byte_length, byteorder='big')
+    byte_array = binary_int.to_bytes(byte_length, byteorder="big")
 
     # Use buffered writing to save the compressed data
     output_file_path = os.path.join(os.getcwd(), f"{title}.zip")
-    
-    with zipfile.ZipFile(output_file_path, 'w') as zip_file:
-        # Use BufferedWriter to write binary data in chunks
-        with io.BytesIO() as binary_stream:
-            binary_stream.write(byte_array)
-            binary_stream.seek(0)
-            zip_file.writestr("compressed_data.bin", binary_stream.read())
 
-        # Save the padding length for decompression purposes
-        zip_file.writestr("padding_length.txt", str(padding_length).encode())
 
-        # Save the Huffman dictionary as a JSON file
-        zip_file.writestr("huffman_dict.json", json.dumps(code_dict).encode())
+    # Step 4: Prepare the header:
+    # Convert the Huffman dictionary into JSON format and encode it to bytes
+    huffman_dict_json = json.dumps(code_dict).encode()
 
-    print(f"Compressed binary saved to {output_file_path}")
+    # Store the padding length as a single bye (since it's between 0 -7)
+    padding_info_bytes = bytes([padding_length])
 
-    return binary_string
+    # Define the delimeter to sperate the header from the compressed data
+    delimeter = b"\nHEADER_END\n"
 
-# Argument parsing function remains unchanged...
+    # Step 5: Use io.BYTESIO to handle all data in memory 
+    with io.BytesIO() as memory_stream:
+    # Write the header: Huffman dictionary, padding info and delimeter
+
+        memory_stream.write(huffman_dict_json)
+        memory_stream.write(padding_info_bytes)
+        memory_stream.write(delimeter)
+
+        # Write the compressed binary data
+        memory_stream.write(byte_array)
+
+        # Get the final compressed data from the memory stream
+        compressed_data = memory_stream.getvalue()
+
+    # Step 6: Write the compressed data into a ZIP file
+    output_file_path = os.path.join(os.getcwd(), f"{title}.zip")
+
+    with zipfile.ZipFile(output_file_path, "w") as zip_file:
+        zip_file.writestr("compressed_data.bin", compressed_data)
+
+    print(f"Compressed binary with header saved to {output_file_path}")
+
+    return compressed_data
 
 def get_argument():
     parser = argparse.ArgumentParser(prog="huffman_decode")
@@ -202,7 +224,8 @@ def main():
     # Get the path and the actual folder that we will be compressing.
     title = file_to_zip.replace(".txt", "")
 
-    # Open the file and read the frequency of characters into a dictionary using buffered I/O
+    # Open the file and read the frequency of 
+    # characters into a dictionary using buffered I/O
     alpha_dict = {}
 
     # Accumulate the entire file content
