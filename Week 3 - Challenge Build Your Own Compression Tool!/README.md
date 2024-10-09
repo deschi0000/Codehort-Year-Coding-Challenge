@@ -64,6 +64,20 @@ The prefix code table is generated.
    ```
 Although this could have been included into  a header section for the output file, This tree structure will be included as a JSON file in the compressed ZIP file.
 
+### Step 4: Prepare the header:
+   ```bash 
+    huffman_dict_json = json.dumps(code_dict).encode()
+    padding_info_bytes = bytes([padding_length])
+    delimeter = b"\nHEADER_END\n"
+   ```
+
+### Step 5: Use io.BYTESIO to handle all data in memory 
+   ```bash 
+    with io.BytesIO() as memory_stream:
+        memory_stream.write(huffman_dict_json)
+        memory_stream.write(padding_info_bytes)
+        memory_stream.write(delimeter)
+   ```
 
 ### Step 6: Encode and Write the Compressed Data
 
@@ -85,4 +99,25 @@ Optimization has been considered to more efficiently handle files larger than av
 - Read and write in chunks - 64KB at a time
 - Use buffered I/O
 
-**N.B.** - Buffered Streams have been utilized so that the entire file is not read into memory at once. Bitwise operations were used for actual compression, with the compressed data being written in binary mode, not as text.
+**N.B.** - Buffered Streams have been utilized so that the entire file is not read into memory at once. Bitwise operations were used for actual compression, with the compressed data being written in binary mode, not as text. I have included a different version without the header, instead storing it as a Json file. The results for this method were comparable to the header version.
+
+
+### Results!
+
+So how well does it work? For the small test data, the results were negligible, but for the full Les Misérables text, the compression was starting to make a difference.
+- Original size = 3291 KB
+- Compressed size = 1879 KB
+
+$$ 
+\text{Compression Ratio} = \frac{\text{Compressed Size}}{\text{Original Size}} 
+$$  
+
+So for the ratio:
+
+The compression ratio is $ \frac{1879}{3291} \approx 0.57 $
+
+Or 57%. 
+
+While this is in no way outstanding, proof-of-concept was the focus of this week and while there are many optimizations to be made, this was a fun first dip into data compression!
+
+
