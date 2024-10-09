@@ -113,8 +113,7 @@ $$
 $$  
 
 So for the ratio:
-
-The compression ratio is $ \frac{1879}{3291} \approx 0.57 $
+The compression ratio is 1879 / 3291 ≈ 0.57 
 
 Or 57%. 
 
