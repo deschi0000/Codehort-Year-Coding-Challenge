@@ -110,9 +110,11 @@ So how well does it work? For the small test data, the results were negligible, 
 
 $$ 
 \text{Compression Ratio} = \frac{\text{Compressed Size}}{\text{Original Size}} 
-\frac{1879}{3291} \approx 0.57 
-
 $$  
+
+So for the ratio:
+
+The compression ratio is $ \frac{1879}{3291} \approx 0.57 $
 
 Or 57%. 
 
