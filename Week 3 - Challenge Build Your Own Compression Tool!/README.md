@@ -117,6 +117,6 @@ The compression ratio is 1879 / 3291 ≈ 0.57
 
 Or 57%. 
 
-While this is in no way outstanding, proof-of-concept was the focus of this week and while there are many optimizations to be made, this was a fun first dip into data compression!
+While this is in no way outstanding and only marginally reaches closer to 57% for a file twice the size of Les Mis, proof-of-concept was the focus of this week: A file is read, compressed using Huffman coding and subsequently decompressed. While there are many optimizations to be made, this was a fun first dip into data compression!
 
 
