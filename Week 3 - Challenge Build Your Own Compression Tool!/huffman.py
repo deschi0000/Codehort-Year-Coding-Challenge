@@ -173,7 +173,6 @@ def compress_into_binary(text, code_dict, title):
     # Use buffered writing to save the compressed data
     output_file_path = os.path.join(os.getcwd(), f"{title}.zip")
 
-
     # Step 4: Prepare the header:
     # Convert the Huffman dictionary into JSON format and encode it to bytes
     huffman_dict_json = json.dumps(code_dict).encode()
