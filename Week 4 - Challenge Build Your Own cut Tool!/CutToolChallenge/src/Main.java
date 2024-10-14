@@ -18,6 +18,7 @@ public class Main {
 
         String delimeter = null;
         Integer fieldValue = null;
+        Integer multipleFieldValues[] = null;
 
         Boolean tail = false;
         Boolean head = false;
@@ -42,8 +43,29 @@ public class Main {
                     columnArgument = arg.replace("-f","").trim();
                     if (!columnArgument.isEmpty()){
                         try {
-                            fieldValue = Integer.parseInt(columnArgument);
-                            System.out.println("Field Value: " + fieldValue + "\n");
+                            // See if there is a range of columns
+                            if (columnArgument.contains(",")){
+                                String fieldValueArgs[] = columnArgument.split(",");
+//                                for (String i : fieldValueArgs){
+//                                    System.out.println(i);
+//                                }
+                                // Make sure that both arguments are valid fields
+                                if (Integer.parseInt(fieldValueArgs[0]) < 0 || Integer.parseInt(fieldValueArgs[1]) < 0){
+                                    System.out.println("Field value argument cannot be below 0");
+                                    throw new NumberFormatException();
+                                }
+
+
+                            }
+                            // If only one value, set the fieldValue
+                            else {
+                                fieldValue = Integer.parseInt(columnArgument);
+                                if (fieldValue < 0) {
+                                    System.out.println("Field value argument cannot be below 0");
+                                    throw new NumberFormatException();
+                                }
+                                System.out.println("Field Value: " + fieldValue + "\n");
+                            }
                         } catch(NumberFormatException e){
                             System.out.println("Error: Please specify a valid integer for the column selection");
                             throw new NumberFormatException();
