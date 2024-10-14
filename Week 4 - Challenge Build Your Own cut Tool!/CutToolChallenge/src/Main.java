@@ -134,7 +134,7 @@ public class Main {
                     // Check to see if the lines have to be skipped if only reading the last five values
 
                     String[] values = line.split(delimeter);
-                    currentLine++;
+//                    currentLine++;
 
                     if (values.length < 2) {
                         System.out.println("Please specify a valid delimeter");
