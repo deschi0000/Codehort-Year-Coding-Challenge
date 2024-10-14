@@ -17,7 +17,6 @@ public class Main {
         String fileName = "";
 
         String delimeter = null;
-        String delimeterArg = null;
         Integer fieldValue = null;
 
         Boolean tail = false;
@@ -31,7 +30,7 @@ public class Main {
 //        Extract the args
         if (args.length < 1) {
             System.out.println("Error: Please enter a file");
-        } else {
+        } else  {
             for (String arg : args) {
                 // Get the file
                 if (arg.contains(".csv") || arg.contains(".tsv")){
@@ -53,10 +52,8 @@ public class Main {
                 }
                 // Check for  delimeter argument
                 if (arg.contains("-d")){
-                    delimeterArg = arg.replace("-d", "").trim();
-                    System.out.println("Specified Delimeter Agrument: " + delimeterArg);
+                    delimeter = arg.replace("-d", "").trim();
                 }
-                System.out.println(arg.trim().contains("tail"));
                 // Check to see if head and tail constraints are in effects
                 if (arg.trim().contains("tail")) {
                     tail = true;
@@ -78,6 +75,7 @@ public class Main {
                 delimeter = "\t";
             } else {
                 System.out.printf("Error: Invalid file type");
+                return;
             }
         }
 
@@ -85,66 +83,50 @@ public class Main {
         System.out.println("\nFile with Path: " + fileName);
 
         // Get the number of lines in the document (so that head and tail can be used)
-        String line;
-        long totalLinesInFile = 0;
-        int tailIteratorStart = 0;
-
 
         try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
-            totalLinesInFile = br.lines().count();
-            System.out.println("Total lines in the CSV: " + totalLinesInFile);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+            String line;
+            int currentLine = 0;
+            long totalLinesInFile = br.lines().count();
+            br.close(); // Close and re-open for actual reading
 
-        // Read the file with a buffered reader
-        try (BufferedReader br = new BufferedReader(new FileReader(fileName.toString()))) {
+            // Read the file with a buffered reader
+            try (BufferedReader br2 = new BufferedReader(new FileReader(fileName))) {
 
-            // Resolve if it is a head or a tail command
-            if (tail) {
-                tailIteratorStart = (int)totalLinesInFile - headTailLength;
-//                System.out.println("Tail Iterator Start: " + tailIteratorStart);
-            }
-            if (head) {
-                // Only count the first five lines
-                totalLinesInFile = 5;
-            }
+                int tailStart = (int) (tail ? totalLinesInFile - headTailLength : 0); // ie 95-5 == 90 will start point
 
-//            while ((line = br.readLine()) != null) {
-            Integer currentLine = 0;
+                while ((line = br2.readLine()) != null) {
+                    currentLine ++;
+                    if (tail && currentLine < tailStart) continue; // skip until the last five values are reached
+                    if (head && currentLine > headTailLength) break; // We break after the first five values
 
-            while ( currentLine < totalLinesInFile) {
+                    Boolean ValidFieldValue;
 
-                Boolean ValidFieldValue;
+                    // Check to see if the lines have to be skipped if only reading the last five values
 
-                // Check to see if the lines have to be skipped if only reading the last five values
-                if (currentLine < tailIteratorStart){
-                    currentLine++;
-                    continue;
-                } else {
-                    line = br.readLine();
                     String[] values = line.split(delimeter);
+
+                    if (values.length < 2) {
+                        System.out.println("Please specify a valid delimeter");
+                        return;
+                    }
 
                     // Check to see if the field value is valid
                     if (fieldValue != null) {
-                        if (ValidFieldValue = (fieldValue > values.length)){
+                        if (ValidFieldValue = (fieldValue > values.length)) {
                             System.out.println("Error: Column doesn't exist in the file");
                             throw new IndexOutOfBoundsException();
                         }
                     }
 
-//                    System.out.println(currentLine);
                     currentLine++;
 
                     // If no field value / column given, business as usual
-                    if (fieldValue == null){
-
-//                        System.out.printf("Row: ");
+                    if (fieldValue == null) {
+                        //                        System.out.printf("Row: ");
                         for (String value : values) {
-                            System.out.printf("%s%s", value, delimeterArg != null ? delimeterArg : "\t");
+                            System.out.printf("%s%s", value, "\t");
 
-//                            System.out.printf("%-10s" + "%s", value, delimeterArg);
-//                            System.out.printf("%s" + "%s", value, delimeterArg);
                         }
                         System.out.println();
                     }
@@ -152,9 +134,9 @@ public class Main {
                     // If fieldValue is not none, and no exception was thrown, then it is valid:
                     else {
                         // Output the colum specified in the fieldValue
-                        for (int i = 0 ; i < values.length; i ++ ){
+                        for (int i = 0; i < values.length; i++) {
                             if (i == fieldValue) {
-                                System.out.println(values[i-1]);
+                                System.out.println(values[i - 1]);
                             }
                         }
                     }
@@ -167,7 +149,7 @@ public class Main {
             System.out.printf("Error: An I/O error occurred while reading the file at path %s. Please try again.\n", fileName);
         }
     }
-
+}
 
     //        'C:\Users\Dave\Documents\Coding\Week 4 - Java\CutToolChallenge\testdata\fourchords.csv'
 //        'C:\Users\Dave\Documents\Coding\Week 4 - Java\CutToolChallenge\testdata\sample.tsv'
@@ -184,4 +166,3 @@ public class Main {
 //        Path pathFileName = Paths.get(currentDir.toString(), "testdata", "fourchords.csv");
 //        Path pathFileName = Paths.get(currentDir.toString(), "testdata", "sample.tsv");
 //        fileName = pathFileName.toString();
-}
