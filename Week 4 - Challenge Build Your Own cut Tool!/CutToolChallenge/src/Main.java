@@ -18,11 +18,13 @@ public class Main {
 
         String delimeter = null;
         Integer fieldValue = null;
-        Integer multipleFieldValues[] = null;
 
         Boolean tail = false;
         Boolean head = false;
 
+        String fieldValueArgs[] = null;
+        Integer lowerFieldValue = null;
+        Integer higherFieldValue = null;
 
         for (String arg : args) {
             System.out.println("arg: " + arg);
@@ -44,8 +46,13 @@ public class Main {
                     if (!columnArgument.isEmpty()){
                         try {
                             // See if there is a range of columns
-                            if (columnArgument.contains(",")){
-                                String fieldValueArgs[] = columnArgument.split(",");
+                            if (columnArgument.contains(",") || columnArgument.contains(" ")){
+                                if (columnArgument.contains(",")){
+                                    fieldValueArgs = columnArgument.split(",");
+                                }
+                                else if (columnArgument.contains(" ")){
+                                    fieldValueArgs = columnArgument.split(" ");
+                                }
 //                                for (String i : fieldValueArgs){
 //                                    System.out.println(i);
 //                                }
@@ -53,9 +60,9 @@ public class Main {
                                 if (Integer.parseInt(fieldValueArgs[0]) < 0 || Integer.parseInt(fieldValueArgs[1]) < 0){
                                     System.out.println("Field value argument cannot be below 0");
                                     throw new NumberFormatException();
+                                } else {
+                                    lowerFieldValue = Integer.parseInt(fieldValueArgs[0]);
                                 }
-
-
                             }
                             // If only one value, set the fieldValue
                             else {
@@ -127,6 +134,7 @@ public class Main {
                     // Check to see if the lines have to be skipped if only reading the last five values
 
                     String[] values = line.split(delimeter);
+                    currentLine++;
 
                     if (values.length < 2) {
                         System.out.println("Please specify a valid delimeter");
@@ -135,32 +143,48 @@ public class Main {
 
                     // Check to see if the field value is valid
                     if (fieldValue != null) {
-                        if (ValidFieldValue = (fieldValue > values.length)) {
+                        if (fieldValue > values.length) {
                             System.out.println("Error: Column doesn't exist in the file");
                             throw new IndexOutOfBoundsException();
                         }
                     }
 
-                    currentLine++;
-
-                    // If no field value / column given, business as usual
-                    if (fieldValue == null) {
-                        //                        System.out.printf("Row: ");
-                        for (String value : values) {
-                            System.out.printf("%s%s", value, "\t");
-
+                    if (higherFieldValue == null && fieldValueArgs != null) {
+                        higherFieldValue = Integer.parseInt(fieldValueArgs[1]);
+                        if (higherFieldValue > values.length) {
+                            System.out.println("Error: Column doesn't exist in the file");
+                            throw new IndexOutOfBoundsException();
                         }
-                        System.out.println();
                     }
 
-                    // If fieldValue is not none, and no exception was thrown, then it is valid:
-                    else {
-                        // Output the colum specified in the fieldValue
+                    // If no field value / column given, business as usual
+                    if ((fieldValue == null) && (lowerFieldValue != null) && (higherFieldValue != null)) {
+                        for (int i = 0; i < values.length; i++) {
+                            // Don't print the last delimeter
+                            if (i >= lowerFieldValue && i < higherFieldValue) {
+                                System.out.printf("%s%s", values[i-1], delimeter);
+                            }
+                            else if (i == higherFieldValue) {
+                                System.out.printf("%s", values[i-1]);
+                            }
+                        }
+                        System.out.println();
+                    } else if (fieldValue != null) {
                         for (int i = 0; i < values.length; i++) {
                             if (i == fieldValue) {
                                 System.out.println(values[i - 1]);
                             }
                         }
+                    } else if (fieldValue == null) {
+                        for (int i = 0; i < values.length; i++) {
+                            if (i < (values.length - 1)){
+                                System.out.printf("%s%s", values[i], delimeter);
+                            }
+                            else {
+                                System.out.printf("%s", values[i]);
+                            }
+                        }
+                        System.out.println();
                     }
                 }
             }
