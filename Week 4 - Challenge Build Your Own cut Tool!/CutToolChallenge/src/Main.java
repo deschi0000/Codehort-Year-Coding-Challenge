@@ -1,8 +1,5 @@
 import java.awt.*;
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -111,9 +108,26 @@ public class Main {
         System.out.println("Delimeter: " + delimeter);
         System.out.println("\nFile with Path: " + fileName);
 
-        // Get the number of lines in the document (so that head and tail can be used)
 
-        try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
+        BufferedReader br;
+
+        if (fileName.isEmpty()) {
+//            if (fileName.isEmpty() || fileName.equals("-")) {
+            br = new BufferedReader(new InputStreamReader(System.in));
+            System.out.println("Reading from standard input. Press Ctrl+D (or Ctrl+Z on Windows) to end input.");
+        } else {
+            try {
+                br = new BufferedReader(new FileReader(fileName));
+            } catch (FileNotFoundException e) {
+                System.out.printf("Error: The file at path %s was not found. Please check if the file exists.\n", fileName);
+                return;
+            }
+        }
+
+
+
+        try (br) {
+//            try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
             String line;
             int currentLine = 0;
             long totalLinesInFile = br.lines().count();
