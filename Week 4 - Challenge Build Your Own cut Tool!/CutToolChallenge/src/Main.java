@@ -1,228 +1,165 @@
-import java.awt.*;
 import java.io.*;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.util.LinkedList;
+import java.util.Queue;
 
-// Press Shift twice to open the Search Everywhere dialog and type `show whitespaces`,
-// then press Enter. You can now see whitespace characters in your code.
 public class Main {
     public static void main(String[] args) {
-
         Integer headTailLength = 5;
-
         String columnArgument = "";
         String fileName = "";
-
-        String delimeter = null;
+        String delimiter = null;
         Integer fieldValue = null;
-
         Boolean tail = false;
         Boolean head = false;
-
-        String fieldValueArgs[] = null;
+        String[] fieldValueArgs = null;
         Integer lowerFieldValue = null;
         Integer higherFieldValue = null;
+        Boolean stdInput = false;
 
-        for (String arg : args) {
-            System.out.println("arg: " + arg);
-        }
-
-//        Extract the args
+        // Extract the args
         if (args.length < 1) {
-            System.out.println("Error: Please enter a file");
-        } else  {
+            System.err.println("Error: Please enter a file");
+            return;
+        } else {
             for (String arg : args) {
+                // Debug print to stderr
+                System.err.println("arg: " + arg);
+
                 // Get the file
-                if (arg.contains(".csv") || arg.contains(".tsv")){
+                if (arg.contains(".csv") || arg.contains(".tsv")) {
                     fileName = arg;
                 }
 
                 // Check for field/column argument
-                if (arg.contains("-f")){
-                    columnArgument = arg.replace("-f","").trim();
-                    if (!columnArgument.isEmpty()){
+                if (arg.startsWith("-f")) {
+                    columnArgument = arg.replace("-f", "").trim();
+                    if (!columnArgument.isEmpty()) {
                         try {
-                            // See if there is a range of columns
-                            if (columnArgument.contains(",") || columnArgument.contains(" ")){
-                                if (columnArgument.contains(",")){
-                                    fieldValueArgs = columnArgument.split(",");
-                                }
-                                else if (columnArgument.contains(" ")){
-                                    fieldValueArgs = columnArgument.split(" ");
-                                }
-//                                for (String i : fieldValueArgs){
-//                                    System.out.println(i);
-//                                }
-                                // Make sure that both arguments are valid fields
-                                if (Integer.parseInt(fieldValueArgs[0]) < 0 || Integer.parseInt(fieldValueArgs[1]) < 0){
-                                    System.out.println("Field value argument cannot be below 0");
-                                    throw new NumberFormatException();
+                            if (columnArgument.contains(",") || columnArgument.contains(" ")) {
+                                fieldValueArgs = columnArgument.split("[, ]");
+                                if (Integer.parseInt(fieldValueArgs[0]) < 0 || Integer.parseInt(fieldValueArgs[1]) < 0) {
+                                    System.err.println("Field value argument cannot be below 0");
+                                    return;
                                 } else {
                                     lowerFieldValue = Integer.parseInt(fieldValueArgs[0]);
+                                    higherFieldValue = Integer.parseInt(fieldValueArgs[1]);
                                 }
-                            }
-                            // If only one value, set the fieldValue
-                            else {
+                            } else {
                                 fieldValue = Integer.parseInt(columnArgument);
                                 if (fieldValue < 0) {
-                                    System.out.println("Field value argument cannot be below 0");
-                                    throw new NumberFormatException();
+                                    System.err.println("Field value argument cannot be below 0");
+                                    return;
                                 }
-                                System.out.println("Field Value: " + fieldValue + "\n");
                             }
-                        } catch(NumberFormatException e){
-                            System.out.println("Error: Please specify a valid integer for the column selection");
-                            throw new NumberFormatException();
+                        } catch (NumberFormatException e) {
+                            System.err.println("Error: Please specify a valid integer for the column selection");
+                            return;
                         }
                     }
                 }
-                // Check for  delimeter argument
-                if (arg.contains("-d")){
-                    delimeter = arg.replace("-d", "").trim();
+
+                // Check for delimiter argument
+                if (arg.startsWith("-d")) {
+                    delimiter = arg.replace("-d", "").trim();
                 }
-                // Check to see if head and tail constraints are in effects
-                if (arg.trim().contains("tail")) {
+
+                // Check if head or tail
+                if (arg.equals("tail")) {
                     tail = true;
-                    System.out.println(arg.trim().contains("tail"));
                 }
 
-                if (arg.trim().contains("head")) {
+                if (arg.equals("head")) {
                     head = true;
-                    System.out.println(arg.trim().contains("head"));
                 }
             }
         }
 
-        // Check to see what the delimeter will be
-        if (delimeter == null) {
+        // Set default delimiter if not provided
+        if (delimiter == null) {
             if (fileName.endsWith(".csv")) {
-                delimeter = ",";
+                delimiter = ",";
             } else if (fileName.endsWith(".tsv")) {
-                delimeter = "\t";
+                delimiter = "\t";
             } else {
-                System.out.printf("Error: Invalid file type");
+                System.err.println("Error: Invalid file type");
                 return;
             }
         }
 
-        System.out.println("Delimeter: " + delimeter);
-        System.out.println("\nFile with Path: " + fileName);
+        System.err.println("Delimiter: " + delimiter);
+        System.err.println("File with Path: " + fileName);
 
-
+        // BufferedReader setup
         BufferedReader br;
-
-        if (fileName.isEmpty()) {
-//            if (fileName.isEmpty() || fileName.equals("-")) {
-            br = new BufferedReader(new InputStreamReader(System.in));
-            System.out.println("Reading from standard input. Press Ctrl+D (or Ctrl+Z on Windows) to end input.");
-        } else {
-            try {
+        try {
+            if (fileName.isEmpty() || fileName.equals("-")) {
+                br = new BufferedReader(new InputStreamReader(System.in));
+                stdInput = true;
+            } else {
                 br = new BufferedReader(new FileReader(fileName));
-            } catch (FileNotFoundException e) {
-                System.out.printf("Error: The file at path %s was not found. Please check if the file exists.\n", fileName);
-                return;
-            }
-        }
-
-
-
-        try (br) {
-//            try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
-            String line;
-            int currentLine = 0;
-            long totalLinesInFile = br.lines().count();
-            br.close(); // Close and re-open for actual reading
-
-            // Read the file with a buffered reader
-            try (BufferedReader br2 = new BufferedReader(new FileReader(fileName))) {
-
-                int tailStart = (int) (tail ? totalLinesInFile - headTailLength : 0); // ie 95-5 == 90 will start point
-
-                while ((line = br2.readLine()) != null) {
-                    currentLine ++;
-                    if (tail && currentLine < tailStart) continue; // skip until the last five values are reached
-                    if (head && currentLine > headTailLength) break; // We break after the first five values
-
-                    Boolean ValidFieldValue;
-
-                    // Check to see if the lines have to be skipped if only reading the last five values
-
-                    String[] values = line.split(delimeter);
-//                    currentLine++;
-
-                    if (values.length < 2) {
-                        System.out.println("Please specify a valid delimeter");
-                        return;
-                    }
-
-                    // Check to see if the field value is valid
-                    if (fieldValue != null) {
-                        if (fieldValue > values.length) {
-                            System.out.println("Error: Column doesn't exist in the file");
-                            throw new IndexOutOfBoundsException();
-                        }
-                    }
-
-                    if (higherFieldValue == null && fieldValueArgs != null) {
-                        higherFieldValue = Integer.parseInt(fieldValueArgs[1]);
-                        if (higherFieldValue > values.length) {
-                            System.out.println("Error: Column doesn't exist in the file");
-                            throw new IndexOutOfBoundsException();
-                        }
-                    }
-
-                    // If no field value / column given, business as usual
-                    if ((fieldValue == null) && (lowerFieldValue != null) && (higherFieldValue != null)) {
-                        for (int i = 0; i < values.length; i++) {
-                            // Don't print the last delimeter
-                            if (i >= lowerFieldValue && i < higherFieldValue) {
-                                System.out.printf("%s%s", values[i-1], delimeter);
-                            }
-                            else if (i == higherFieldValue) {
-                                System.out.printf("%s", values[i-1]);
-                            }
-                        }
-                        System.out.println();
-                    } else if (fieldValue != null) {
-                        for (int i = 0; i < values.length; i++) {
-                            if (i == fieldValue) {
-                                System.out.println(values[i - 1]);
-                            }
-                        }
-                    } else if (fieldValue == null) {
-                        for (int i = 0; i < values.length; i++) {
-                            if (i < (values.length - 1)){
-                                System.out.printf("%s%s", values[i], delimeter);
-                            }
-                            else {
-                                System.out.printf("%s", values[i]);
-                            }
-                        }
-                        System.out.println();
-                    }
-                }
             }
         } catch (FileNotFoundException e) {
-            System.out.printf("Error: The file at path %s was not found. Please check if the file exists.\n", fileName);
+            System.err.printf("Error: The file at path %s was not found. Please check if the file exists.\n", fileName);
+            return;
+        }
+
+        // Process the file or standard input
+        try (br) {
+            String line;
+            int currentLine = 0;
+            Queue<String> tailQueue = new LinkedList<>();
+
+            while ((line = br.readLine()) != null) {
+                currentLine++;
+
+                // Head case: Print first N lines and exit early
+                if (head && currentLine <= headTailLength) {
+                    printLine(line, delimiter, fieldValue, lowerFieldValue, higherFieldValue);
+                }
+
+                // Tail case: Keep last N lines in a queue
+                if (tail) {
+                    tailQueue.add(line);
+                    if (tailQueue.size() > headTailLength) {
+                        tailQueue.poll(); // Maintain queue size
+                    }
+                }
+
+                // General case: Neither head nor tail
+                if (!head && !tail) {
+                    printLine(line, delimiter, fieldValue, lowerFieldValue, higherFieldValue);
+                }
+            }
+
+            // Print tail if necessary
+            if (tail) {
+                for (String tailLine : tailQueue) {
+                    printLine(tailLine, delimiter, fieldValue, lowerFieldValue, higherFieldValue);
+                }
+            }
 
         } catch (IOException e) {
-            System.out.printf("Error: An I/O error occurred while reading the file at path %s. Please try again.\n", fileName);
+            System.err.println("Error: An I/O error occurred while reading.");
+        }
+    }
+
+    // Function to print the line with the correct field values
+    private static void printLine(String line, String delimiter, Integer fieldValue, Integer lowerFieldValue, Integer higherFieldValue) {
+        String[] values = line.split(delimiter);
+        if (fieldValue != null) {
+            if (fieldValue <= values.length) {
+                System.out.println(values[fieldValue - 1]);
+            }
+        } else if (lowerFieldValue != null && higherFieldValue != null) {
+            if (higherFieldValue > values.length) {
+                System.err.println("Error: Column doesn't exist in the file");
+                return;
+            }
+            for (int i = lowerFieldValue - 1; i < higherFieldValue; i++) {
+                System.out.printf("%s%s", values[i], (i < higherFieldValue - 1) ? delimiter : "\n");
+            }
+        } else {
+            System.out.println(String.join(delimiter, values));
         }
     }
 }
-
-    //        'C:\Users\Dave\Documents\Coding\Week 4 - Java\CutToolChallenge\testdata\fourchords.csv'
-//        'C:\Users\Dave\Documents\Coding\Week 4 - Java\CutToolChallenge\testdata\sample.tsv'
-
-    //        Get the Current Directory and the file for the path for processing.
-//    String currentDir = System.getProperty("user.dir");
-//        Path projectRoot = Paths.get("").toAbsolutePath();
-//        System.out.println("currnet dir: " + currentDir);
-
-//        Path fileName = Paths.get(currentDir.toString(), "testdata", "fourchords.csv");
-//        Path csvFile = Paths.get(projectRoot.toString(), "testdata", "fourchords.csv");
-
-//        Debug with the IntelliJ run
-//        Path pathFileName = Paths.get(currentDir.toString(), "testdata", "fourchords.csv");
-//        Path pathFileName = Paths.get(currentDir.toString(), "testdata", "sample.tsv");
-//        fileName = pathFileName.toString();
