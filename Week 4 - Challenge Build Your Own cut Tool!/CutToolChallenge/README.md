@@ -106,3 +106,62 @@ Combine the cut tool with other Unix commands to count unique artists:
 - Optimization for larger files by using a Queue
 - More effort put into error handling
 
+## Exectuable Artifact
+
+This project can be turned into an executable in the following way:
+### Step 1: Complie your project
+   ```bash 
+  javac Main.java
+   ```
+
+### Step 2: Create a Manifest File ```manifest.txt``` 
+Contaning the following:
+   ```bash 
+  Manifest-Version: 1.0
+Main-Class: Main
+   ```
+
+### Step 3: Package the Executable JAR
+Run the following command:
+   ```bash 
+  jar cfm MyCutTool.jar manifest.txt Main.class
+   ```
+
+This command does the following:
+
+- ```c``` = create a new archive
+- ```f``` = specify the output file (```MyCutTool.jar```)
+- ```m``` = include the manifest file (```manifest.txt```)
+
+You can now run the JAR file
+   ```bash 
+  java -jar MyCutTool.jar
+   ```
+
+
+### Step 4: Run from anywhere
+Create a new directory.
+   ```bash 
+  C:\Tools
+   ```
+
+- Place the jar file within.
+- Add this path to your Systems Path Variable.
+- Create a bat file ```MyCutTool.bat```
+- The contents of this bat file:  
+  ```bash
+  @echo off
+  java -jar "C:\Tool\MyCutTool.jar" %*
+  ```
+  (This .bat file can be placed in any folder whose path is listed in system variable, 
+the main point is that in the file, it points to the where the jar file is)
+
+```MyCutTool``` can now be used anywhere: 
+```bash
+    C:\Users\Dave>MyCutTool C:\Tools\fourchords.csv -f1,2 head
+    ?Song title,Artist
+    "10000 Reasons (Bless the Lord)",Matt Redman and Jonas Myrin
+    "20 Good Reasons",Thirsty Merc
+    "Adore You",Harry Styles
+    "Africa",Toto
+  ```
