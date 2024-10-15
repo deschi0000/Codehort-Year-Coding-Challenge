@@ -23,7 +23,7 @@ public class Main {
         } else {
             for (String arg : args) {
                 // Debug print to stderr
-                System.err.println("arg: " + arg);
+                //System.err.println("arg: " + arg);
 
                 // Get the file
                 if (arg.contains(".csv") || arg.contains(".tsv")) {
@@ -86,8 +86,8 @@ public class Main {
             }
         }
 
-        System.err.println("Delimiter: " + delimiter);
-        System.err.println("File with Path: " + fileName);
+//        System.err.println("Delimiter: " + delimiter);
+//        System.err.println("File with Path: " + fileName);
 
         // BufferedReader setup
         BufferedReader br;
