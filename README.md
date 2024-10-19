@@ -17,5 +17,6 @@ While some of solutions could be optimized in regards to using a lower/higher le
 
 - Week 1: Build Your Own wc Tool!
 - Week 2: Build Your Own JSON Parser!
+- Week 3: Build Your Own Compression Tool!
 
 
